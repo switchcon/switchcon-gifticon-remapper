@@ -89,6 +89,11 @@ def encrypt_QR():
         swcEnable = "swc:" == body[:4].decode("utf-8")
         if not swcEnable:
             thisbody = body.decode("utf-8")
+            try:
+                fs2 = Registered.get(Registered.barcodenum == thisbody)
+                return jsonify({"success": False, "reason": "Switchcon-Registered Barcode Used Normally"}), 401
+            except: 
+                pass
             ff = Products.get(Products.barcodeNum == thisbody)
             if(ff.used == 1):
                 return jsonify({"success": False, "reason": "Already Used!"}), 410

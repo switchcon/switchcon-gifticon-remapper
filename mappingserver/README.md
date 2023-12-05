@@ -40,6 +40,7 @@ else
 
 ### Error Codes
 
+- 401: Switchcon-Registerd Invalid Use
 - 406: Expired Barcode
 - 408: Switchcon Timeout
 - 409: Hash Check Failure
