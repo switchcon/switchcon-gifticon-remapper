@@ -64,7 +64,7 @@ def encrypt_register(bid):
                 if expiry < nowstruct:
                     return jsonify({"success": False, "reason": "Registering Expired Barcode!"}), 406
         except Exception as e:
-            return jsonify({"success": False, "reason": "Barcode Not Found"}), 404
+            return jsonify({"success": False, "reason": "Barcode Not Found"}), 400
         body = request.data
         b64body = base64.b64decode(body)
         nonce = b64body[:16]
@@ -82,7 +82,7 @@ def encrypt_register(bid):
             Registered.create(hashstring=base64.b64encode(hmac_bnum).decode("utf-8"), barcodenum=bid)
             return jsonify({"success" : True, "reason": "Registered Well!"}), 200
     except Exception as e:
-        return jsonify({"success": False, "reason": repr(e)}), 400
+        return jsonify({"success": False, "reason": repr(e)}), 422
 
 @app.route("/gifticon/encrypt/useqrcode", methods=['POST'])
 def encrypt_QR():
@@ -97,7 +97,10 @@ def encrypt_QR():
                 return jsonify({"success": False, "reason": "Switchcon-Registered Barcode Used Normally"}), 401
             except: 
                 pass
-            ff = Products.get(Products.barcodeNum == thisbody)
+            try:
+                ff = Products.get(Products.barcodeNum == thisbody)
+            except:
+                return jsonify({"success": False, "reason": "Barcode Not Found"}), 400
             if(ff.used == 1):
                 return jsonify({"success": False, "reason": "Already Used!"}), 410
             else:
@@ -126,11 +129,11 @@ def encrypt_QR():
         try:
             realname = Registered.get(Registered.hashstring == base64.b64encode(hmac_bnum).decode("utf-8")).barcodenum
         except:
-            return jsonify({"success": False, "reason": "Barcode is not Registerd!"}), 404
+            return jsonify({"success": False, "reason": "Barcode is not Registerd!"}), 400
         try:
             ff = Products.get(Products.barcodeNum == realname)
         except:
-            return jsonify({"success": False, "reason": "No such barcode!"}), 404
+            return jsonify({"success": False, "reason": "No such barcode!"}), 400
         if(ff.used == 1):
             return jsonify({"success": False, "reason": "Already Used!"}), 410
         else:
@@ -143,7 +146,7 @@ def encrypt_QR():
             return jsonify({"success": True, "data": model_to_dict(ff)}), 200
     except Exception as e:
         print(e.__class__) 
-        return jsonify({"success": False, "reason": repr(e)}), 400
+        return jsonify({"success": False, "reason": repr(e)}), 422
 
 @app.route("/gifticon/additem", methods=["POST"])
 def addItem():
@@ -158,7 +161,7 @@ def addItem():
         Products.create(barcodeNum=barcodeNum, productName=productName, category=category, price=price, used=used)
         return jsonify({"success" :  True}) , 200
     except Exception as e:
-        return jsonify({"success" :  False, "reason" : repr(e)}) , 400
+        return jsonify({"success" :  False, "reason" : repr(e)}) , 422
 
 
 app.run(port=8088)
