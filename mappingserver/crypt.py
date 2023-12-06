@@ -53,15 +53,18 @@ def aft_req(response):
 @app.route("/gifticon/encrypt/register/<bid>", methods=['POST'])
 def encrypt_register(bid):
     try:
-        ff = Products.get(Products.barcodeNum == bid)
-        now = time.time()
-        if(ff.used == 1):
-            return jsonify({"success": False, "reason": "Already Used barcode!"}), 410
-        else:
-            expiry = time.strptime(ff.expireDate, "%Y-%m-%d")
-            nowstruct = time.gmtime(now)
-            if expiry < nowstruct:
-                return jsonify({"success": False, "reason": "Registering Expired Barcode!"}), 406
+        try:
+            ff = Products.get(Products.barcodeNum == bid)
+            now = time.time()
+            if(ff.used == 1):
+                return jsonify({"success": False, "reason": "Already Used barcode!"}), 410
+            else:
+                expiry = time.strptime(ff.expireDate, "%Y-%m-%d")
+                nowstruct = time.gmtime(now)
+                if expiry < nowstruct:
+                    return jsonify({"success": False, "reason": "Registering Expired Barcode!"}), 406
+        except Exception as e:
+            return jsonify({"success": False, "reason": "Barcode Not Found"}), 404
         body = request.data
         b64body = base64.b64decode(body)
         nonce = b64body[:16]
@@ -120,8 +123,14 @@ def encrypt_QR():
             return jsonify({"success": False, "reason": "Inconsitent on Encrypted Data"}), 409
         if nowtime - exptime > 610:
             return jsonify({"success": False, "reason": "Switchcon Barcode Expired!"}), 408
-        realname = Registered.get(Registered.hashstring == base64.b64encode(hmac_bnum).decode("utf-8")).barcodenum
-        ff = Products.get(Products.barcodeNum == realname)
+        try:
+            realname = Registered.get(Registered.hashstring == base64.b64encode(hmac_bnum).decode("utf-8")).barcodenum
+        except:
+            return jsonify({"success": False, "reason": "Barcode is not Registerd!"}), 404
+        try:
+            ff = Products.get(Products.barcodeNum == realname)
+        except:
+            return jsonify({"success": False, "reason": "No such barcode!"}), 404
         if(ff.used == 1):
             return jsonify({"success": False, "reason": "Already Used!"}), 410
         else:
