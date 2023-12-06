@@ -156,9 +156,9 @@ def addItem():
         category = request.args.get("category")
         price = int(request.args.get("price"))
         used = request.args.get("used")
-        expireDate =request.args.get("expiredate")
+        expireDate = request.args.get("expiredate")
         
-        Products.create(barcodeNum=barcodeNum, productName=productName, category=category, price=price, used=used)
+        Products.create(barcodeNum=barcodeNum, productName=productName, category=category, price=price, expireDate=expireDate, used=used)
         return jsonify({"success" :  True}) , 200
     except Exception as e:
         return jsonify({"success" :  False, "reason" : repr(e)}) , 422
